@@ -6,6 +6,8 @@ Geog6300: Lab 6
 ``` r
 library(sf)
 library(tidyverse)
+library(tmap)
+library(ggplot2)
 ```
 
 **Overview:** This lab focuses on regression techniques. You’ll be
@@ -69,7 +71,6 @@ and population, and water in 2020 as well as elevation. Based on these
 graphs, assess the normality of these variables.*
 
 ``` r
-library(ggplot2)
 variables <- c("ndvi_20_med", "maxtemp_20_med", "mintemp_20_med", "rain_20_sum", "pop_20", "water_20_pct", "elev_med")
 for (var in variables) {
   p <- ggplot(data, aes_string(x = var)) +
@@ -96,71 +97,110 @@ cat("Check the shapes of the histograms to assess normality. Symmetrical, bell-s
 
     ## Check the shapes of the histograms to assess normality. Symmetrical, bell-shaped distributions are more likely normal.
 
-{The shape of the distributions in the histograms provides insights into
-the normality of the data. A bell-shaped and symmetrical distribution
-shows that the variable likely follows a normal distribution, indicating
-that the data is evenly distributed around the mean. On the other hand,
-distributions that are skewed to the left or right or exhibit multiple
-peaks (multimodal) deviate from normality, suggesting that the data may
-be influenced by underlying patterns, outliers, or non-uniform
-processes.}
+{The histograms and QQ plots shows varied patterns of normality in the
+2020 dataset. NDVI and rainfall show roughly symmetrical histograms but
+exhibit some skewness, particularly NDVI, which is slightly positively
+skewed. The QQ plot for NDVI also deviates from the straight line,
+indicating a departure from a perfect normal distribution. In contrast,
+temperature variables (both max and min) display right-skewed
+distributions, suggesting that while higher temperatures are less
+common, extreme values are more frequent. The QQ plots further support
+this skewness, with noticeable deviations from normality. Population,
+water percentage, and elevation data all show significant skewness.
+Population data, in particular, is highly right-skewed, with a long tail
+that reflects a few regions with very high population densities. Water
+percentage is concentrated near zero, with only a few areas exhibiting
+higher values, and elevation is similarly skewed, with most data points
+concentrated at lower elevations. These variables do not follow a normal
+distribution, and if used in parametric models, they may require
+additional tests for normality.The shape of the distributions in the
+histograms provides insights into the normality of the data. A
+bell-shaped and symmetrical distribution shows that the variable likely
+follows a normal distribution, indicating that the data is evenly
+distributed around the mean. On the other hand, distributions that are
+skewed to the left or right or exhibit multiple peaks (multimodal)
+deviate from normality, suggesting that the data may be influenced by
+underlying patterns, outliers, or non-uniform processes.}
+
+**Question 2** *Use tmap to map these same variables using Jenks
+naturalbreaks as the classification method. For an extra challenge,
+use`tmap_arrange` to plot all maps in a single figure.*
 
 ``` r
-library(sf)
-library(tmap)
-```
-
-    ## Breaking News: tmap 3.x is retiring. Please test v4, e.g. with
-    ## remotes::install_github('r-tmap/tmap')
-
-``` r
-spatial_data <- data
-print(names(spatial_data))
-```
-
-    ##  [1] "grid_id"                "maxtemp_00_med"         "maxtemp_20_med"        
-    ##  [4] "mintemp_00_med"         "mintemp_20_med"         "rain_00_sum"           
-    ##  [7] "rain_20_sum"            "ndvi_00_med"            "ndvi_20_med"           
-    ## [10] "water_00_pct"           "water_20_pct"           "pop_00"                
-    ## [13] "pop_20"                 "elev_med"               "Central.Bearded.Dragon"
-    ## [16] "Common.emu"             "Red.kangaroo"           "Agile.wallaby"         
-    ## [19] "Laughing.kookaburra"    "Wombat"                 "Koala"                 
-    ## [22] "Platypus"               "geom"
-
-``` r
-tmap_mode("plot")
-```
-
-    ## tmap mode set to plotting
-
-``` r
-map_list <- list(
-  tm_shape(spatial_data) +
-    tm_polygons("ndvi_20_med", style = "jenks", palette = "yellow", title = "NDVI") +
-    tm_layout(main.title = "NDVI", main.title.size = 0.5),
-  tm_shape(spatial_data) +
-    tm_polygons("maxtemp_20_med", style = "jenks", palette = "green", title = "Max Temperature") +
-    tm_layout(main.title = "Max Temperature", main.title.size = 0.5),
-  tm_shape(spatial_data) +
-    tm_polygons("mintemp_20_med", style = "jenks", palette = "Blues", title = "Min Temperature") +
-    tm_layout(main.title = "Min Temperature", main.title.size = 0.5),
-  tm_shape(spatial_data) +
-    tm_polygons("rain_20_sum", style = "jenks", palette = "Purples", title = "Rainfall") +
-    tm_layout(main.title = "Rainfall", main.title.size = 0.5),
-  tm_shape(spatial_data) +
-    tm_polygons("pop_20", style = "jenks", palette = "brown", title = "Population") +
-    tm_layout(main.title = "Population", main.title.size = 0.5),
-  tm_shape(spatial_data) +
-    tm_polygons("water_20_pct", style = "jenks", palette = "pink", title = "Water") +
-    tm_layout(main.title = "Water", main.title.size = 0.5),
-  tm_shape(spatial_data) +
-    tm_polygons("elev_med", style = "jenks", palette = "red", title = "Elevation") +
-    tm_layout(main.title = "Elevation", main.title.size = 0.5)
-)
-tmap_arrange(plotlist = map_list, ncol = 2)
+map_ndvi <- tm_shape(data) +
+  tm_fill("ndvi_20_med", style = "jenks", palette = "RdYlGn", title = "NDVI 2020") +
+  tm_borders() +
+  tm_layout(main.title = "NDVI 2020", legend.position = c("left", "bottom"))
+map_ndvi
 ```
 
 ![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+map_maxtemp <- tm_shape(data) +
+  tm_fill("maxtemp_20_med", style = "jenks", palette = "YlOrRd", title = "Max Temp. 2020") +
+  tm_borders() +
+  tm_layout(main.title = "Max Temperature 2020", legend.position = c("left", "bottom"))
+map_maxtemp
+```
+
+![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
+
+``` r
+map_mintemp <- tm_shape(data) +
+  tm_fill("mintemp_20_med", style = "jenks", palette = "YlGnBu", title = "Min Temp. 2020") +
+  tm_borders() +
+  tm_layout(main.title = "Min Temperature 2020", legend.position = c("left", "bottom"))
+map_mintemp
+```
+
+![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
+
+``` r
+map_rainfall <- tm_shape(data) +
+  tm_fill("rain_20_sum", style = "jenks", palette = "Blues", title = "Rainfall 2020") +
+  tm_borders() +
+  tm_layout(main.title = "Rainfall 2020", legend.position = c("left", "bottom"))
+map_rainfall
+```
+
+![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
+
+``` r
+map_population <- tm_shape(data) +
+  tm_fill("pop_20", style = "jenks", palette = "YlOrBr", title = "Population 2020") +
+  tm_borders() +
+  tm_layout(main.title = "Population 2020", legend.position = c("left", "bottom"))
+map_population
+```
+
+![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-5.png)<!-- -->
+
+``` r
+map_water <- tm_shape(data) +
+  tm_fill("water_20_pct", style = "jenks", palette = "Purples", title = "Water % 2020") +
+  tm_borders() +
+  tm_layout(main.title = "Water Percentage 2020", legend.position = c("left", "bottom"))
+map_water
+```
+
+![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-6.png)<!-- -->
+
+``` r
+map_elevation <- tm_shape(data) +
+  tm_fill("elev_med", style = "jenks", palette = "Greens", title = "Elevation 2020") +
+  tm_borders() +
+  tm_layout(main.title = "Elevation 2020", legend.position = c("left", "bottom"))
+map_elevation
+```
+
+![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-7.png)<!-- -->
+
+``` r
+tmap_arrange(map_ndvi, map_maxtemp, map_mintemp, map_rainfall, map_population, map_water, map_elevation, ncol = 2)
+```
+
+![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-8.png)<!-- -->
 
 **Question 3** *Based on the maps from question 3, summarise major
 patterns you see in the spatial distribution of these data from any of
@@ -388,24 +428,29 @@ are the direction, magnitude, and significance of each coefficient? How
 did it change from the univariate models you created in Q4 (if at all)?
 What do the R2 and F-statistic values tell you about overall model fit?*
 
-{The multivariate regression model reveals significant relationships
-between NDVI and the selected predictors. Max temperature has a negative
-association with NDVI (β=−0.0117= -0.0117β=−0.0117, p \< 2e-16),
-rainfall has a positive association (β=8.469×10−7= 8.469
-^{-7}β=8.469×10−7, p \< 2e-16), population shows a smaller but positive
-effect (β=2.862×10−7= 2.862 ^{-7}β=2.862×10−7, p = 0.00627), and
-elevation also positively influences NDVI (β=1.233×10−4= 1.233
-^{-4}β=1.233×10−4, p = 1.46e-11). Compared to the univariate models, the
-magnitudes of the coefficients for max temperature, rainfall, and
-population decreased, reflecting shared variability among predictors,
-while the effect of elevation remained stable. The model explains
-approximately 64% of the variation in NDVI (R2=0.6397R^2 =
-0.6397R2=0.6397, adjusted R2=0.6376R^2 = 0.6376R2=0.6376), indicating a
-strong overall fit. The significant F-statistic (F=315.5F =
-315.5F=315.5, p \< 2.2e-16) confirms the predictors collectively explain
-substantial variation in NDVI, with rainfall and max temperature having
-the strongest impacts, while population and elevation contribute smaller
-but meaningful effects.}
+{The multivariate regression model identifies significant relationships
+between NDVI and the selected predictors such as ncluding maximum
+temperature,(maxtemp_20_med), rainfall (rain_20_sum), water percentage,
+(water_20_pct), and elevation (elev_med). Maximum temperature shows a
+negative association, with NDVI decreasing by 0.0117 units for each 1°C
+increase (p \< 2e-16). Rainfall has a positive effect, where NDVI
+increases by 0.00008469% for each additional millimeter of rainfall (p
+\< 2e-16). Population density contributes a smaller positive effect,
+with NDVI increasing by 2.862 × 10⁻⁷ units per additional person per
+square kilometer (p = 0.00627). Elevation also positively influences
+NDVI, with a small increase of 0.0001233 units for every 1-meter rise in
+elevation (p = 1.46e-11). Compared to the univariate models, the
+coefficients for maximum temperature, rainfall, and population are
+slightly reduced, reflecting shared variability among predictors, while
+the effect of elevation remains consistent.The model explains
+approximately 64% of the variance in NDVI (R² = 0.6397, Adjusted R² =
+0.6376), indicating a strong overall fit. The significant F-statistic (F
+= 315.5, p \< 2.2e-16) confirms that the predictors collectively account
+for substantial variation in NDVI. Among the predictors, maximum
+temperature and rainfall have the strongest impacts, while population
+and elevation contribute smaller but meaningful effects. Presenting the
+coefficients in real-world units clarifies their relevance and improves
+interpretability.}
 
 **Question 7** *Use a histogram and a map to assess the normality of
 residuals and any spatial autocorrelation. Summarise any notable
@@ -517,7 +562,7 @@ install.packages("sandwich")
 
     ## 
     ## The downloaded binary packages are in
-    ##  /var/folders/7q/pmylvy295zz0hvm9h7fmxpn00000gn/T//RtmplT2EQY/downloaded_packages
+    ##  /var/folders/7q/pmylvy295zz0hvm9h7fmxpn00000gn/T//RtmpldrzyV/downloaded_packages
 
 ``` r
 library(sandwich)
@@ -694,17 +739,38 @@ tm_shape(spatial_data) + tm_borders() + tm_fill(col = "residuals")
     ## Variable(s) "residuals" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette.
 
 ![](Lab-6_regression_files/figure-gfm/unnamed-chunk-10-3.png)<!-- -->
-{The first difference model tells us how the change in environmental and
-demographic factors is related to the change in NDVI over the 20-year
-period.It provides insights into whether shifts in these variables (such
-as changes in temperature or population) are associated with
-improvements or declines in vegetation health (NDVI).If there are
+{The residuals are color-coded based on their magnitude and direction,
+ranging from negative values (red) to positive values (green). Red areas
+indicate model underestimation, where the predicted values were too high
+compared to the observed values, with the strongest negative residuals
+observed in the northeastern part of Australia. Green areas,
+representing overestimation, show regions where the model’s predictions
+were too low compared to the observed values, mainly in the central and
+southern parts of the map. Yellow and orange regions indicate residuals
+close to zero, suggesting that the model’s predictions closely aligned
+with the observed values in these areas. Upon assessing the model error,
+the map reveals significant variability in residuals across the country,
+with some areas displaying large positive and negative residuals. This
+suggests that the model fits well in certain regions but may fail to
+capture the data distribution in others. Areas with significant
+residuals could reflect local patterns or characteristics not accounted
+for by the model, indicating that incorporating additional variables or
+refining the model could improve accuracy. Overall, the model appears to
+capture the general trend across most of Australia, with the residuals
+mostly close to zero, but there are notable deviations in some
+locations. These deviations point to opportunities for model
+improvement, particularly in areas with large residuals, by considering
+local factors or adding more relevant predictors to enhance the model’s
+fit.The first difference model tells us how the change in environmental
+and demographic factors is related to the change in NDVI over the
+20-year period.It provides insights into whether shifts in these
+variables (such as changes in temperature or population) are associated
+with improvements or declines in vegetation health (NDVI).If there are
 significant coefficients, this suggests a meaningful relationship
 between the variables’ changes and NDVI’s change, which could inform
 policy or resource management decisions.Overall, this model helps to
 highlight the dynamics between environmental and demographic changes and
-their influence on vegetation health, which might not be clear when
-looking at static (non-differenced) data.}
+their influence on vegetation health.}
 
 \#Option 2 The animal data included in this dataset is an example of
 count data, and usually we would use a Poisson or similar model for that
